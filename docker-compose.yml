@@ -1,0 +1,12 @@
+version: '3.3'
+services:
+  fpm:
+    image: php:8.1.2-fpm
+    container_name: fpm-dev
+    ports:
+      - '8432:7432'
+  nginx:
+    image: nginx:1.21.4
+    container_name: nginx-dev
+    ports:
+      - '443:9443'
