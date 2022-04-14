@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { EmailAddressGenerator } from './EmailAddressGenerator';
 
 interface EmailAddressGeneratedResponse {
@@ -8,15 +8,24 @@ interface EmailAddressGeneratedResponse {
   }[];
 }
 
-@Controller()
+interface InputRequestModel {
+  name: string;
+  value: string;
+}
+
+interface InputsRequestModel {
+  inputs: InputRequestModel[];
+  expression: string;
+}
+
+@Controller('email-generation')
 export class EmailAddressGeneratorController {
   constructor(private readonly emailAddressGenerator: EmailAddressGenerator) {}
 
-  @Get()
+  @Post('address')
   getHello(
-    @Query('inputs') inputs: string[],
-    @Query('expression') expression: string,
+    @Body() inputsRequest: InputsRequestModel,
   ): EmailAddressGeneratedResponse {
-    return this.emailAddressGenerator.generateEmailAddress(inputs, expression);
+    return this.emailAddressGenerator.generateEmailAddress(inputsRequest);
   }
 }
