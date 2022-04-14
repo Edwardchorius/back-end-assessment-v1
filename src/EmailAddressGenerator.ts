@@ -16,13 +16,12 @@ interface InputModel {
 // 2. possible vector of attack by malicious parties
 @Injectable()
 export class EmailAddressGenerator {
-  private readonly EMAIL_ADDRESS_VALIDATOR = `[a-zA-Z0-9!#$%&'*+-/=?^_\`{|}~]+[@][gmail,mail,external]+[.][com,net,eu]+`;
   generateEmailAddress(requestModel: {
     inputs: InputModel[];
     expression: string;
   }): EmailAddressGeneratedOutput {
     const { inputs, expression } = requestModel;
-    const result: EmailAddressGeneratedOutput = { data: [] };
+    const resultEmailAddress: string[] = [];
 
     const inputsToValues = inputs.reduce((acc, currentInput) => {
       return {
@@ -37,37 +36,90 @@ export class EmailAddressGenerator {
       const currentExpression = expressionParts[i];
 
       const currentExpressionParts = currentExpression.split('|');
+      const commands = currentExpressionParts[1].split('_');
+
       const currentInputName = currentExpressionParts[0];
+      const currentInputValue = inputsToValues[currentInputName];
 
-      if (inputsToValues[currentInputName]) {
-        const currentInputValue = inputsToValues[currentInputName];
+      if (currentInputValue.includes('+')) {
+        continue;
+      }
 
-        const currentExpressionCommands = currentExpressionParts[1].split('_');
+      if (currentExpressionParts[1].includes('eachWord')) {
+        const inputValueParts = currentInputValue.split(/-| /);
 
-        const currentCounter = 0;
-        const currentValuesOfInput = currentInputValue.split(/ |-/);
-        while (currentCounter < currentExpressionCommands.length) {
-          const currentCommand = currentExpressionCommands[currentCounter];
+        const valueToPush = this.mapCharsFromWords(
+          commands,
+          inputValueParts,
+          0,
+        );
 
-          if (currentCommand === 'eachWord') {
-          } else if (
-            currentCommand === 'lastWord' &&
-            currentValuesOfInput.length > 1
-          ) {
-            //
-          } else {
-          }
+        resultEmailAddress.push(valueToPush);
+        resultEmailAddress.push('.');
+        //Skip the rest of the logic as we already completed the current iteration with input
+        continue;
+      }
 
-          //after checking from which word to start go ahead and do this manipulation below on the words
-          if (currentCommand === 'start') {
-          } else if (currentCommand === 'take') {
-          }
+      if (currentExpressionParts[1].includes('lastWords')) {
+        const inputValueParts = currentInputValue.split(/-| /);
+
+        const valueToPush = this.mapCharsFromWords(
+          commands,
+          inputValueParts,
+          1,
+        );
+
+        resultEmailAddress.push(valueToPush);
+        resultEmailAddress.push('.');
+        //Skip the rest of the logic as we already completed the current iteration with input
+        continue;
+      }
+
+      if (
+        currentExpressionParts[1].includes('@') &&
+        !resultEmailAddress.includes('@')
+      ) {
+        if (resultEmailAddress[resultEmailAddress.length - 1] === '.') {
+          resultEmailAddress.pop();
         }
+
+        resultEmailAddress.push('@');
+        continue;
+      }
+
+      if (
+        currentExpressionParts[1].length === 1 &&
+        currentExpressionParts[1] === '*'
+      ) {
+        if (i !== expressionParts.length - 1) {
+          resultEmailAddress.push(currentInputValue + '.');
+        } else {
+          resultEmailAddress.push(currentInputValue);
+        }
+        continue;
       }
     }
 
-    //Iterate through the array of inputs and split each value accordingly to form the output
+    const finalOutput = resultEmailAddress.join('').toLowerCase();
 
-    return { data: [{ id: '', value: '' }] };
+    return { data: [{ id: finalOutput, value: finalOutput }] };
+  }
+
+  private mapCharsFromWords(
+    commands: string[],
+    inputValueParts: string[],
+    startingIndex = 0,
+  ): string {
+    let output = '';
+    for (let j = startingIndex; j < inputValueParts.length; j++) {
+      const inputValueForMapping = inputValueParts[j];
+
+      //TODO What if the start index or take count is bigger than 9 ? This logic below might be missing out certain digits
+      const startIndex = Number(commands[1].substring(commands[1].length - 1));
+      const takeCount = Number(commands[2].substring(commands[2].length - 1));
+
+      output = output + inputValueForMapping.substring(startIndex, takeCount);
+    }
+    return output;
   }
 }
