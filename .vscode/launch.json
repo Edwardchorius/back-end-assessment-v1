@@ -12,6 +12,14 @@
       "runtimeArgs": ["run-script", "start-api-debug:dev"],
       "port": 9229,
       "stopOnEntry": true,
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Script: test:debug",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "test:debug"],
+      "port": 9229
     }
   ]
 }
