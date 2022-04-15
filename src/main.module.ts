@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { EmailAddressGeneratorController } from './EmailAddressGeneratorController';
-import { EmailAddressGenerator } from './EmailAddressGenerator';
+import { EmailAddressGeneratorController } from './api';
+import { EmailAddressGenerator } from './domain';
 
 @Module({
   imports: [],

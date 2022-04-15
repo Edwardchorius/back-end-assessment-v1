@@ -1,23 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import {
+  EmailAddressGeneratedOutput,
+  EmailAddressGenerationInput,
+} from '../models';
 
-interface EmailAddressGeneratedOutput {
-  data: {
-    id: string;
-    value: string;
-  }[];
-}
-
-interface InputModel {
-  name: string;
-  value: string;
-}
 //DO NOT USE eval():
 // 1. long expensive variable name lookups
 // 2. possible vector of attack by malicious parties
 @Injectable()
 export class EmailAddressGenerator {
   generateEmailAddress(requestModel: {
-    inputs: InputModel[];
+    inputs: EmailAddressGenerationInput[];
     expression: string;
   }): EmailAddressGeneratedOutput {
     const { inputs, expression } = requestModel;
